@@ -24,6 +24,9 @@ int main(void)
 	int Num=1208;
 	float Data=3.14;
 	*/
+	char Bufferr[15];
+	int Num=1208;
+	float Data=3.14;
 	
 	gpiousart();
 	usartinit();
@@ -33,19 +36,20 @@ int main(void)
 	OLED_Clear();
 	while(1)
 	{
-		/*
 		//打印字符串
-		OLED_Clear();
-		OLED_ShowString(20, 2, Buffer);
-		Delay_ms(600);
+//		OLED_Clear();
+//		OLED_ShowString(20, 2, Buffer);
+//		Delay_ms(600);
+		
 		
 		//打印数字
 		OLED_Clear();
 		OLED_ShowNum(0, 2, Num, 8, 16);
 		sprintf(Bufferr, "%0.2f", Data);  //浮点转换字符串
 		OLED_ShowString(0,0, Bufferr);
-		//OLED_ShowNum(0, 0, Data, 8, 16);
+		OLED_ShowNum(0, 0, Data, 8, 16);
 		Delay_ms(600);
+
 		
 		//打印自定义字符
 		OLED_Clear();
@@ -54,12 +58,11 @@ int main(void)
 		OLED_ShowCHinese(28, 2, 2);
 		OLED_ShowCHinese(42, 2, 3);
 		Delay_ms(600);
-
-		*/
+		
 		//打印BMP图片
-		//OLED_Clear();
+		OLED_Clear();
 		OLED_DrawBMP(0,0,126,8,BMP);
-		//Delay_ms(1000);
+		Delay_ms(500);
 	}
 }
 

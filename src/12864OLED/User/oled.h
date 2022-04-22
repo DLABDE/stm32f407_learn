@@ -9,10 +9,12 @@
 
 /**
   * OLED模式设置
-	* 0:4线串行模式
-	* 1:并行8080模式
+	* 0:spi
+	* 1:并行
+	* 2:IIC
   */
-#define OLED_MODE 				0
+#define OLED_MODE 				2
+
 #define SIZE 							16
 #define XLevelL						0x00
 #define XLevelH						0x10
@@ -22,40 +24,39 @@
 #define X_WIDTH 					128
 #define Y_WIDTH 					64	    
 
+
+
+/*并行口定义*/
+#define DATAOUT(x) GPIO_Write(GPIOA,x);
+
+
+
+/*SPI iic定义*/
+#define IIC_ADS 0x78			//设备地址
 #define OLED_CMD  0				//写命令
 #define OLED_DATA 1				//写数据
-
-/* 端口引脚宏定义,方便程序移植 */
+//端口引脚宏定义
 #define  GPIO_OLED_CLK  				RCC_AHB1Periph_GPIOA
+#define  GPIO_OLED_X						GPIOA
 #define  GPIO_OLED_SCLK_Pin     GPIO_Pin_0							/* D0 */
 #define  GPIO_OLED_PIN_Pin     	GPIO_Pin_1							/* D1 */
 #define  GPIO_OLED_RES_Pin     	GPIO_Pin_2							/* RES */
 #define  GPIO_OLED_DC_Pin     	GPIO_Pin_3							/* DC */
-
-/* 引脚电平设置 */
-/** 
-  * 注意：需要配置的有RES、DC、CLK、PIN四个引脚，接线CS可不接，当选模式0的时候要接CS
-	*/
+//引脚电平设置
 /*
+注意：需要配置的有RES、DC、CLK、PIN四个引脚，接线CS可不接，当选模式0的时候要接CS
 #define OLED_CS_Clr()  GPIO_ResetBits(GPIOA,GPIO_Pin_8)	//CS 片选 => 置零或悬空 当选模式0的时候要连
 #define OLED_CS_Set()  GPIO_SetBits(GPIOA,GPIO_Pin_8)
 */
+#define OLED_RST_Clr() GPIO_ResetBits(GPIO_OLED_X,GPIO_OLED_RES_Pin)	//RES
+#define OLED_RST_Set() GPIO_SetBits(GPIO_OLED_X,GPIO_OLED_RES_Pin)
+#define OLED_DC_Clr() GPIO_ResetBits(GPIO_OLED_X,GPIO_OLED_DC_Pin)	//DC
+#define OLED_DC_Set() GPIO_SetBits(GPIO_OLED_X,GPIO_OLED_DC_Pin)
+#define OLED_SCLK_Clr() GPIO_ResetBits(GPIO_OLED_X,GPIO_OLED_SCLK_Pin)//CLK		SCL
+#define OLED_SCLK_Set() GPIO_SetBits(GPIO_OLED_X,GPIO_OLED_SCLK_Pin)
+#define OLED_SDIN_Clr() GPIO_ResetBits(GPIO_OLED_X,GPIO_OLED_PIN_Pin)//PIN		SDA
+#define OLED_SDIN_Set() GPIO_SetBits(GPIO_OLED_X,GPIO_OLED_PIN_Pin)
 
-#define OLED_RST_Clr() GPIO_ResetBits(GPIOA,GPIO_Pin_2)	//RES RES => 接RES引脚
-#define OLED_RST_Set() GPIO_SetBits(GPIOA,GPIO_Pin_2)
-
-#define OLED_DC_Clr() GPIO_ResetBits(GPIOA,GPIO_Pin_3)	//DC  DC  => 接DC引脚 
-#define OLED_DC_Set() GPIO_SetBits(GPIOA,GPIO_Pin_3)
-
-/* 使用4线串行接口时使用 */ 
-#define OLED_SCLK_Clr() GPIO_ResetBits(GPIOA,GPIO_Pin_0)//CLK D0  => 接D0引脚
-#define OLED_SCLK_Set() GPIO_SetBits(GPIOA,GPIO_Pin_0)
-
-#define OLED_SDIN_Clr() GPIO_ResetBits(GPIOA,GPIO_Pin_1)//PIN D1  => 接D1引脚
-#define OLED_SDIN_Set() GPIO_SetBits(GPIOA,GPIO_Pin_1)
-  
-/* PC0~7,作为数据线 */
-#define DATAOUT(x) GPIO_Write(GPIOB,x);									//输出 
 
 /* OLED控制用函数 */
 void OLED_Clear(void);																																											 /* OLED清屏 */

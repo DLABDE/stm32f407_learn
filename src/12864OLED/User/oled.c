@@ -24,20 +24,7 @@ void OLED_WR_Byte(uint8_t dat,uint8_t cmd)
 	OLED_CS_Set();	  
 	OLED_DC_Set();	 
 } 	    	    
-#else
-
-
-static void Delay_ms(u16 time)
-{    
-   u16 i=0;  
-   while(time--)
-   {
-      i=0xafff;
-      while(i--) ;    
-   }
-}
-
-
+#elif OLED_MODE==0
 /**
   * @brief 向SSD1106写入一个字节
 	* @param dat:要写入的数据/命令 cmd:数据/命令标志 0,表示命令;1,表示数据;
@@ -62,8 +49,94 @@ void OLED_WR_Byte(uint8_t dat,uint8_t cmd)
 	}				 		  
 	OLED_DC_Set();   	  
 } 
+
+#elif OLED_MODE==2
+
+static void i2c_Delay(void)
+{
+	uint8_t i;
+	for (i = 0; i < 35; i++);	//循环次数为20~250时都能通讯正常
+}
+
+static void i2c_Start(void)//启动信号
+{
+	OLED_SCLK_Set() ;
+	OLED_SDIN_Set();
+	i2c_Delay();
+	OLED_SDIN_Clr();
+	i2c_Delay();
+	OLED_SCLK_Clr();
+	i2c_Delay();
+}
+
+static void i2c_Stop(void)//停止信号
+{
+	OLED_SCLK_Set() ;
+	OLED_SCLK_Clr();
+	OLED_SDIN_Clr();
+	OLED_SDIN_Set();
+}
+
+
+static void i2c_WaitAck(void)
+{
+	OLED_SDIN_Set();
+	i2c_Delay();
+	OLED_SCLK_Set() ;	/* CPU驱动SCL = 1, 此时器件会返回ACK应答 */
+	i2c_Delay();
+	OLED_SCLK_Clr();
+	i2c_Delay();
+}
+
+//主机发送8bit数据
+static void i2c_SendByte(uint8_t _ucByte)
+{
+	uint8_t i;
+	for (i = 0; i < 8; i++)//先发送字节的高位bit7
+	{		
+		if (_ucByte & 0x80)
+			OLED_SDIN_Set();
+		else
+			OLED_SDIN_Clr();
+		i2c_Delay();
+		OLED_SCLK_Set() ;
+		i2c_Delay();	
+		OLED_SCLK_Clr();
+		if (i == 7)
+			OLED_SDIN_Set(); // 释放总线
+		_ucByte <<= 1;	
+		i2c_Delay();
+	}
+}
+
+void OLED_WR_Byte(uint8_t dat,uint8_t cmd)
+{
+	i2c_Start();           
+  i2c_SendByte(IIC_ADS);	
+	i2c_WaitAck();	
+	if(cmd)
+		i2c_SendByte(0x40);//写数据
+	else 
+		i2c_SendByte(0x00);//写命令
+	i2c_WaitAck();
+	i2c_SendByte(dat); 
+	i2c_WaitAck();		
+  i2c_Stop();
+}
 #endif
 
+
+
+
+static void Delay_ms(u16 time)
+{    
+   u16 i=0;  
+   while(time--)
+   {
+      i=0xafff;
+      while(i--) ;    
+   }
+}
 
 void OLED_Set_Pos(unsigned char x, unsigned char y) 
 { 
@@ -262,8 +335,8 @@ void GPIO_OLED_InitConfig(void)
 	GPIO_OLEDInitStruct.GPIO_PuPd=GPIO_PuPd_NOPULL;
 	GPIO_OLEDInitStruct.GPIO_Mode = GPIO_Mode_OUT;						 				
 	GPIO_OLEDInitStruct.GPIO_OType=GPIO_OType_PP;
-	GPIO_Init(GPIOA, &GPIO_OLEDInitStruct);                      				
- 	GPIO_SetBits(GPIOB, GPIO_OLED_SCLK_Pin|GPIO_OLED_PIN_Pin|GPIO_OLED_RES_Pin|GPIO_OLED_DC_Pin);
+	GPIO_Init(GPIO_OLED_X, &GPIO_OLEDInitStruct);                      				
+ 	GPIO_SetBits(GPIO_OLED_X, GPIO_OLED_SCLK_Pin|GPIO_OLED_PIN_Pin|GPIO_OLED_RES_Pin|GPIO_OLED_DC_Pin);
 
   OLED_RST_Set();
 	Delay_ms(20);
