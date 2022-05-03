@@ -53,6 +53,8 @@
 #ifndef __STM32F4xx_H
 #define __STM32F4xx_H
 
+#define HSE_VALUE    ((uint32_t)8000000)//Íâ²¿¾§Õñ8M
+
 #ifdef __cplusplus
  extern "C" {
 #endif /* __cplusplus */
